@@ -138,17 +138,19 @@ canvas {
 
 /* ── Overlay screens ── */
 .overlay {
-    position: absolute;
+    position: fixed;
     inset: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.88);
-    z-index: 100;
-    gap: 16px;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
+    gap: 14px;
     padding: 20px;
     text-align: center;
+    overflow-y: auto;
+    pointer-events: auto;
 }
 
 .overlay h1 {
@@ -212,6 +214,74 @@ canvas {
     color: #000;
     box-shadow: 0 0 20px var(--yellow);
     animation: none;
+}
+
+.leaderboard-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    padding: 10px 18px;
+    border: 2px solid var(--green);
+    background: #001a00;
+    color: var(--green);
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.leaderboard-btn:hover {
+    background: var(--green);
+    color: #000;
+    box-shadow: 0 0 12px var(--green);
+}
+
+/* Leaderboard Table */
+.leaderboard-table {
+    width: 100%;
+    max-width: 400px;
+    border-collapse: collapse;
+    font-size: 7px;
+    margin: 10px 0;
+}
+
+.leaderboard-table th {
+    color: var(--yellow);
+    padding: 8px 6px;
+    border-bottom: 2px solid var(--yellow);
+    text-align: left;
+}
+
+.leaderboard-table td {
+    color: var(--white);
+    padding: 6px;
+    border-bottom: 1px solid #333;
+}
+
+.leaderboard-table tr:nth-child(1) td {
+    color: #ffd700;
+}
+
+.leaderboard-table tr:nth-child(2) td {
+    color: #c0c0c0;
+}
+
+.leaderboard-table tr:nth-child(3) td {
+    color: #cd7f32;
+}
+
+.leaderboard-table .rank-1 { color: #ffd700; }
+.leaderboard-table .rank-2 { color: #c0c0c0; }
+.leaderboard-table .rank-3 { color: #cd7f32; }
+
+#leaderboard-full {
+    max-height: 300px;
+    overflow-y: auto;
+    width: 100%;
+    max-width: 420px;
+}
+
+.no-scores {
+    color: #666;
+    font-size: 8px;
+    padding: 20px;
 }
 
 .score-final {
@@ -280,4 +350,128 @@ canvas {
 
 #debug-panel b {
     color: var(--green);
+}
+
+/* ── Name Form ── */
+#name-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+#name-form label {
+    font-size: 8px;
+    color: var(--green);
+}
+
+#name-form input {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    padding: 8px 12px;
+    background: #001a00;
+    border: 2px solid var(--green);
+    color: var(--green);
+    text-align: center;
+    width: 200px;
+}
+
+#name-form input:focus {
+    outline: none;
+    box-shadow: 0 0 10px var(--green);
+}
+
+#name-form input::placeholder {
+    color: #446644;
+}
+
+.submit-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    padding: 8px 16px;
+    border: 2px solid var(--green);
+    background: var(--green);
+    color: #000;
+    cursor: pointer;
+    transition: all 0.1s;
+}
+
+.submit-btn:hover {
+    box-shadow: 0 0 15px var(--green);
+}
+
+.submit-btn:disabled {
+    background: #333;
+    border-color: #555;
+    color: #666;
+    cursor: not-allowed;
+}
+
+/* ── Leaderboard ── */
+#leaderboard-container {
+    margin: 10px 0;
+    padding: 10px;
+    background: rgba(0, 50, 0, 0.5);
+    border: 2px solid var(--green);
+    max-width: 320px;
+    width: 100%;
+}
+
+#leaderboard-container h3 {
+    font-size: 10px;
+    color: var(--yellow);
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+#leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.leaderboard-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    font-size: 7px;
+    background: rgba(0, 0, 0, 0.4);
+    border-left: 3px solid transparent;
+}
+
+.leaderboard-entry.highlight {
+    background: rgba(0, 255, 65, 0.15);
+    border-left-color: var(--green);
+}
+
+.leaderboard-entry .rank {
+    color: #888;
+    width: 24px;
+}
+
+.leaderboard-entry .rank.top-3 {
+    color: var(--yellow);
+}
+
+.leaderboard-entry .name {
+    flex: 1;
+    color: var(--white);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.leaderboard-entry .score {
+    color: var(--green);
+    min-width: 60px;
+    text-align: right;
+}
+
+.leaderboard-entry .method {
+    color: #666;
+    font-size: 6px;
+    margin-left: 8px;
 }

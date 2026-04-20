@@ -2,6 +2,7 @@
 //  RANDOMPRO — Cliente REST para el microservicio Python
 // ════════════════════════════════════════════════════════════════
 const API_URL = 'http://localhost:3000/api/randompro';
+const LEADERBOARD_URL = 'http://localhost:3001/api/leaderboard';
 let serverAvailable = false;
 
 async function checkServer() {
@@ -177,9 +178,13 @@ let score, round, ducksHit, ducksTotal, shots, maxShots;
 let ducks = [], effects = [];
 let gameActive = false;
 let animId;
+let preloadIntervalId = null;
 
 // ── Dog sprite state ──
 let dog = { x: 60, state: 'idle', frame: 0, timer: 0, duck: null };
+
+// ── Player name ──
+let playerName = 'Hunter';
 
 function selectMethod(m) {
     methodName = m;
@@ -189,6 +194,10 @@ function selectMethod(m) {
 selectMethod('lcg');
 
 async function startGame() {
+    // Capturar nombre del jugador
+    const nameInput = document.getElementById('player-name');
+    playerName = nameInput.value.trim() || 'Hunter';
+    
     const seed = Date.now();
     rng = methodName === 'lcg'
         ? new CongruenciaLineal(seed)
@@ -204,6 +213,7 @@ async function startGame() {
 
     score = 0; round = 1; ducksHit = 0; ducksTotal = 0;
     shots = 0; maxShots = 3;
+    ducksInRound = 0;
     ducks = []; effects = [];
     gameActive = true;
     dog.state = 'idle';
@@ -219,15 +229,30 @@ async function startGame() {
     if (animId) cancelAnimationFrame(animId);
     loop();
     
+    // Limpiar interval anterior si existe
+    if (preloadIntervalId) {
+        clearInterval(preloadIntervalId);
+    }
+    
     // Recargar números periódicamente
-    setInterval(async () => {
-        if (gameActive && !rng._useFallback && rng._cache.length < 20) {
-            await rng.preload(50);
+    preloadIntervalId = setInterval(async () => {
+        if (gameActive && rng && !rng._useFallback && rng._cache.length < 20) {
+            try {
+                await rng.preload(50);
+            } catch (e) {
+                // Ignorar errores de red
+            }
         }
     }, 2000);
 }
 
 function resetGame() {
+    // Limpiar interval al reiniciar
+    if (preloadIntervalId) {
+        clearInterval(preloadIntervalId);
+        preloadIntervalId = null;
+    }
+    currentPlayerRank = null;
     document.getElementById('screen-over').style.display = 'none';
     document.getElementById('screen-start').style.display = 'flex';
 }
@@ -248,13 +273,22 @@ function spawnDuck() {
     // ── randompro controla TODO ──
     const side = rng.randint(0, 1);               // izquierda o derecha
     const startY = rng.randint(40, H - 120);        // altura inicial
-    const speed = rng.random() * 2.2 + 1.2;        // velocidad
-    const size = rng.randint(22, 38);             // tamaño
+    
+    // Velocidad escalada al tamaño de pantalla
+    const baseSpeed = W / 400;  // Velocidad base MÁS LENTA
+    
+    // Multiplicador de velocidad por ronda (incrementa 10% por ronda)
+    const roundMultiplier = 1 + (round - 1) * 0.10;
+    
+    // Velocidad final: base * multiplicador de ronda + variación aleatoria
+    const speed = (baseSpeed + rng.random() * baseSpeed * 0.4) * roundMultiplier;
+    
+    const size = rng.randint(28, 50);             // tamaño (más grande para pantalla completa)
     const colorI = rng.randint(0, DUCK_COLORS.length - 1);
-    const waveAmp = rng.random() * 18 + 8;           // amplitud del vuelo ondulante
-    const waveFreq = rng.random() * 0.04 + 0.025;
+    const waveAmp = rng.random() * 25 + 12;          // amplitud del vuelo ondulante
+    const waveFreq = rng.random() * 0.03 + 0.015;
 
-    const startX = side === 0 ? -size - 10 : W + size + 10;
+    const startX = side === 0 ? -size * 2 : W + size * 2;
     const dirX = side === 0 ? 1 : -1;
 
     updateDebug();
@@ -273,7 +307,9 @@ function spawnDuck() {
         frame: 0,
         frameTimer: 0,
         wingUp: true,
-        points: Math.round((speed + (42 - size) * 0.3) * 10)
+        // Puntos: más puntos por velocidad, tamaño pequeño, y bonus por ronda
+        points: Math.round((speed + (55 - size) * 0.3) * 10 + round * 5),
+        startSide: side  // Para saber hacia dónde va
     });
 }
 
@@ -471,17 +507,28 @@ function loop(ts = 0) {
             d.fallVy += 0.4 * dt;
             d.y += d.fallVy * dt;
             d.x += d.vx * 0.3 * dt;
-            if (d.y > H) { d.alive = false; d.hit = false; }
+            if (d.y > H) {
+                d.alive = false;
+                d.hit = false;
+                // Pato cazado y caído → siguiente pato
+                nextDuck();
+            }
         } else {
             d.t += dt;
             d.x += d.vx * dt;
             d.y = d.baseY + Math.sin(d.t * d.waveFreq * 60) * d.waveAmp;
             d.frameTimer += dt;
             if (d.frameTimer > 8) { d.wingUp = !d.wingUp; d.frameTimer = 0; }
-            // Off screen → escaped
-            if (d.x < -80 || d.x > W + 80) {
+            
+            // Off screen → escaped (solo cuando cruza al lado OPUESTO)
+            const margin = d.size * 2;
+            const escapedLeft = d.startSide === 1 && d.x < -margin;
+            const escapedRight = d.startSide === 0 && d.x > W + margin;
+            
+            if (escapedLeft || escapedRight) {
                 d.alive = false;
-                if (shots >= maxShots) endRound();
+                // Pato escapó → siguiente pato
+                nextDuck();
             }
         }
         drawDuck(d);
@@ -505,6 +552,15 @@ function loop(ts = 0) {
 //  SHOOT
 // ════════════════════════════════════════════════════════════════
 canvas.addEventListener('click', e => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    // No procesar clicks si algún overlay está visible
+    const screenOver = document.getElementById('screen-over');
+    if (screenOver.style.display === 'flex') {
+        return;
+    }
+    
     if (!gameActive) return;
     if (shots >= maxShots) return;
 
@@ -553,15 +609,36 @@ canvas.addEventListener('click', e => {
 
     updateHUD();
     updateDebug();
-
-    if (shots >= maxShots) {
-        setTimeout(() => endRound(), 800);
-    }
+    
+    // Ya no necesitamos llamar endRound() aquí - nextDuck() se llama cuando el pato muere o escapa
 });
 
 // ════════════════════════════════════════════════════════════════
 //  ROUND MANAGEMENT
 // ════════════════════════════════════════════════════════════════
+const DUCKS_PER_ROUND = 3;  // Patos por ronda
+let ducksInRound = 0;       // Contador de patos en la ronda actual
+
+function nextDuck() {
+    if (!gameActive) return;
+    
+    // Limpiar patos muertos
+    ducks = ducks.filter(d => d.alive || d.hit);
+    
+    ducksInRound++;
+    
+    // Cada DUCKS_PER_ROUND patos, evaluar ronda
+    if (ducksInRound >= DUCKS_PER_ROUND) {
+        ducksInRound = 0;
+        endRound();
+    } else {
+        // Resetear balas y generar siguiente pato
+        shots = 0;
+        updateHUD();
+        setTimeout(() => spawnDuck(), 500);
+    }
+}
+
 function endRound() {
     ducks = [];
     const hitRatio = ducksHit / ducksTotal;
@@ -575,32 +652,214 @@ function endRound() {
 
     round++;
     shots = 0;
-    maxShots = Math.max(1, 3 - Math.floor(round / 4)); // se reduce con rondas
+    maxShots = Math.max(2, 3 - Math.floor(round / 5)); // se reduce con rondas
 
     updateHUD();
     setTimeout(() => spawnDuck(), 600);
 
     // En rondas avanzadas, 2 patos simultáneos
-    if (round >= 4) setTimeout(() => spawnDuck(), 1000);
+    if (round >= 5) setTimeout(() => spawnDuck(), 1000);
 }
 
 function showGameOver() {
     gameActive = false;
+    
+    // Detener el interval de precarga
+    if (preloadIntervalId) {
+        clearInterval(preloadIntervalId);
+        preloadIntervalId = null;
+    }
+    
     const accuracy = ducksTotal > 0
         ? Math.round(ducksHit / ducksTotal * 100) : 0;
     const source = rng._useFallback ? 'JavaScript' : 'Python';
 
     document.getElementById('final-stats').innerHTML = `
+<b>${playerName}</b><br><br>
 PUNTAJE FINAL<br>
 <b>${score.toLocaleString()}</b><br><br>
 RONDAS: <b>${round - 1}</b><br>
 PATOS:  <b>${ducksHit}/${ducksTotal}</b><br>
-PRECISIÓN: <b>${accuracy}%</b><br><br>
-MÉTODO RNG: <b>${methodName.toUpperCase()}</b><br>
-FUENTE: <b>${source} (randompro)</b><br>
-LLAMADAS RNG: <b>${rng.calls}</b>
+PRECISIÓN: <b>${accuracy}%</b>
 `;
+    
     document.getElementById('screen-over').style.display = 'flex';
+    
+    // Desactivar botón de reintentar por 2 segundos para evitar clicks accidentales
+    const retryBtn = document.getElementById('btn-retry');
+    if (retryBtn) {
+        retryBtn.disabled = true;
+        retryBtn.style.opacity = '0.5';
+        retryBtn.style.pointerEvents = 'none';
+        setTimeout(() => {
+            retryBtn.disabled = false;
+            retryBtn.style.opacity = '1';
+            retryBtn.style.pointerEvents = 'auto';
+        }, 2000);
+    }
+    
+    // Guardar score automáticamente
+    saveScore();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  LEADERBOARD
+// ════════════════════════════════════════════════════════════════
+let currentPlayerRank = null;
+
+async function saveScore() {
+    const statusEl = document.getElementById('save-status');
+    statusEl.textContent = '⏳ Guardando score...';
+    statusEl.style.color = '#ffe347';
+    
+    try {
+        const res = await fetch(LEADERBOARD_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: playerName,
+                score: score,
+                round: round - 1,
+                ducks_hit: ducksHit,
+                ducks_total: ducksTotal,
+                method: methodName,
+                rng_calls: rng.calls
+            })
+        });
+        
+        if (!res.ok) throw new Error('Server error');
+        
+        const data = await res.json();
+        currentPlayerRank = data.rank;
+        
+        statusEl.textContent = `✓ Score guardado - RANK #${data.rank}`;
+        statusEl.style.color = '#00ff41';
+        
+        // Cargar leaderboard
+        await loadLeaderboard();
+        
+    } catch (e) {
+        statusEl.textContent = '⚠ No se pudo guardar (servidor offline)';
+        statusEl.style.color = '#ff3c3c';
+        // Cargar leaderboard de todas formas
+        loadLeaderboard();
+    }
+}
+
+async function loadLeaderboard() {
+    const listEl = document.getElementById('leaderboard-list');
+    listEl.innerHTML = '<div style="color:#666;font-size:7px">Cargando...</div>';
+    
+    try {
+        const res = await fetch(`${LEADERBOARD_URL}?limit=10`);
+        if (!res.ok) throw new Error('Server error');
+        
+        const data = await res.json();
+        renderLeaderboard(data.leaderboard);
+    } catch (e) {
+        listEl.innerHTML = '<div style="color:#ff3c3c;font-size:7px">⚠ Sin conexión al servidor</div>';
+    }
+}
+
+function renderLeaderboard(entries) {
+    const listEl = document.getElementById('leaderboard-list');
+    
+    if (entries.length === 0) {
+        listEl.innerHTML = '<div style="color:#666;font-size:7px">Aún no hay scores</div>';
+        return;
+    }
+    
+    listEl.innerHTML = entries.map((entry, i) => {
+        const rank = i + 1;
+        const isHighlight = currentPlayerRank === rank;
+        const isTop3 = rank <= 3;
+        
+        return `
+            <div class="leaderboard-entry ${isHighlight ? 'highlight' : ''}">
+                <span class="rank ${isTop3 ? 'top-3' : ''}">#${rank}</span>
+                <span class="name">${escapeHtml(entry.name)}</span>
+                <span class="score">${entry.score.toLocaleString()}</span>
+                <span class="method">${entry.method.toUpperCase()}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Mostrar pantalla de leaderboard desde inicio
+async function showLeaderboardScreen() {
+    const container = document.getElementById('leaderboard-full');
+    container.innerHTML = '<div style="color:#666;font-size:7px">Cargando...</div>';
+    
+    document.getElementById('screen-start').style.display = 'none';
+    document.getElementById('screen-leaderboard').style.display = 'flex';
+    
+    try {
+        const res = await fetch(`${LEADERBOARD_URL}?limit=20`);
+        if (!res.ok) throw new Error('Server error');
+        
+        const data = await res.json();
+        renderFullLeaderboard(data.leaderboard);
+    } catch (e) {
+        container.innerHTML = '<div class="no-scores">⚠ Sin conexión al servidor</div>';
+    }
+}
+
+function hideLeaderboardScreen() {
+    document.getElementById('screen-leaderboard').style.display = 'none';
+    document.getElementById('screen-start').style.display = 'flex';
+}
+
+function renderFullLeaderboard(entries) {
+    const container = document.getElementById('leaderboard-full');
+    
+    if (entries.length === 0) {
+        container.innerHTML = '<div class="no-scores">Aún no hay scores registrados.<br>¡Sé el primero en jugar!</div>';
+        return;
+    }
+    
+    const rows = entries.map((entry, i) => {
+        const rank = i + 1;
+        const rankClass = rank <= 3 ? `rank-${rank}` : '';
+        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+        const accuracy = entry.ducks_total > 0 
+            ? Math.round(entry.ducks_hit / entry.ducks_total * 100) 
+            : 0;
+        
+        return `
+            <tr class="${rankClass}">
+                <td>${medal}</td>
+                <td>${escapeHtml(entry.name)}</td>
+                <td>${entry.score.toLocaleString()}</td>
+                <td>R${entry.round}</td>
+                <td>${accuracy}%</td>
+                <td>${entry.method.toUpperCase()}</td>
+            </tr>
+        `;
+    }).join('');
+    
+    container.innerHTML = `
+        <table class="leaderboard-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>JUGADOR</th>
+                    <th>SCORE</th>
+                    <th>RONDA</th>
+                    <th>PREC.</th>
+                    <th>RNG</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows}
+            </tbody>
+        </table>
+    `;
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -673,3 +932,14 @@ document.addEventListener('mousemove', e => {
     xhair.style.left = e.clientX + 'px';
     xhair.style.top = e.clientY + 'px';
 });
+
+// ════════════════════════════════════════════════════════════════
+//  BLOCK CLICKS ON GAME OVER OVERLAY
+// ════════════════════════════════════════════════════════════════
+document.getElementById('screen-over').addEventListener('click', e => {
+    // Solo permitir click en el botón de reintentar
+    if (e.target.id !== 'btn-retry') {
+        e.stopPropagation();
+        e.preventDefault();
+    }
+}, true);

@@ -1,0 +1,64 @@
+# ═══════════════════════════════════════════════════════════════
+#  Duck Hunt - .gitignore
+# ═══════════════════════════════════════════════════════════════
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# ── IDE / Editors ──
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ── Logs ──
+*.log
+logs/
+
+# ── Data (mantener estructura, ignorar contenido sensible) ──
+# Descomentar si no quieres versionar los datos:
+# data/scores.json
+# data/model_state.json
+
+# ── Secrets ──
+.env
+.env.local
+*.pem
+*.key
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── Temp ──
+*.tmp
+*.temp
+.cache/

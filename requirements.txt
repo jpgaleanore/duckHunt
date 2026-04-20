@@ -1,3 +1,14 @@
-flask>=2.0
-flask-cors>=4.0
-randompro
+# Duck Hunt - randompro Edition
+# Dependencias Python
+
+# Web Framework
+flask>=3.0.0
+flask-cors>=4.0.0
+
+# PRNG Library
+randompro>=0.1.0
+
+# Machine Learning & Analytics
+scikit-learn>=1.4.0
+numpy>=1.26.0
+scipy>=1.12.0

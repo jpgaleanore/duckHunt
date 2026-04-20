@@ -28,6 +28,13 @@
             <h1>DUCK<br>HUNT</h1>
             <h2>randompro Edition</h2>
             <p id="pyodide-status" style="color:#ff3c3c">⏳ Conectando con servidor...</p>
+            
+            <!-- Nombre del jugador -->
+            <div id="name-form">
+                <label for="player-name">🎮 Tu nombre:</label>
+                <input type="text" id="player-name" maxlength="20" placeholder="Hunter">
+            </div>
+            
             <p>Elige el generador pseudoaleatorio<br>que controlará los patos:</p>
             <div class="method-selector">
                 <button class="method-btn active" data-method="lcg" onclick="selectMethod('lcg')">
@@ -39,15 +46,32 @@
             </div>
             <p style="color:#555">posición · velocidad · tamaño · trayectoria</p>
             <button class="start-btn" id="btn-start" onclick="startGame()" disabled>▶ CONECTANDO...</button>
+            <button class="leaderboard-btn" onclick="showLeaderboardScreen()">🏆 VER SCORES</button>
             <p>Click para disparar &nbsp;|&nbsp; 3 tiros por ronda</p>
+        </div>
+
+        <!-- LEADERBOARD SCREEN -->
+        <div class="overlay" id="screen-leaderboard" style="display:none">
+            <h1>🏆 TOP<br>HUNTERS</h1>
+            <div id="leaderboard-full"></div>
+            <button class="start-btn" onclick="hideLeaderboardScreen()">← VOLVER</button>
         </div>
 
         <!-- GAME OVER -->
 
-        <div class="overlay" id="screen-over" style="display:none">
+        <div class="overlay" id="screen-over" style="display:none" onclick="event.stopPropagation();">
             <h1>GAME<br>OVER</h1>
             <div class="score-final" id="final-stats"></div>
-            <button class="start-btn" onclick="resetGame()">↺ REINTENTAR</button>
+            
+            <p id="save-status" style="color:#00ff41">⏳ Guardando score...</p>
+            
+            <!-- Leaderboard -->
+            <div id="leaderboard-container">
+                <h3>🏆 TOP HUNTERS</h3>
+                <div id="leaderboard-list"></div>
+            </div>
+            
+            <button class="start-btn" id="btn-retry" onclick="event.stopPropagation(); resetGame();">↺ REINTENTAR</button>
         </div>
 
         <!-- HUD -->

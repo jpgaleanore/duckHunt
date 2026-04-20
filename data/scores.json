@@ -1,0 +1,152 @@
+[
+  {
+    "name": "TestPlayer",
+    "score": 1500,
+    "round": 5,
+    "ducks_hit": 0,
+    "ducks_total": 0,
+    "method": "lcg",
+    "rng_calls": 0,
+    "date": "2026-04-19T16:39:06.158035"
+  },
+  {
+    "name": "jp",
+    "score": 591,
+    "round": 14,
+    "ducks_hit": 10,
+    "ducks_total": 27,
+    "method": "cm",
+    "rng_calls": 189,
+    "date": "2026-04-19T16:45:48.968390"
+  },
+  {
+    "name": "jp",
+    "score": 219,
+    "round": 2,
+    "ducks_hit": 1,
+    "ducks_total": 3,
+    "method": "lcg",
+    "rng_calls": 21,
+    "date": "2026-04-19T16:48:24.245834"
+  },
+  {
+    "name": "jp",
+    "score": 219,
+    "round": 2,
+    "ducks_hit": 1,
+    "ducks_total": 3,
+    "method": "lcg",
+    "rng_calls": 21,
+    "date": "2026-04-19T16:48:24.689607"
+  },
+  {
+    "name": "jpjr",
+    "score": 548,
+    "round": 8,
+    "ducks_hit": 5,
+    "ducks_total": 15,
+    "method": "cm",
+    "rng_calls": 105,
+    "date": "2026-04-19T16:54:56.596468"
+  },
+  {
+    "name": "gali",
+    "score": 0,
+    "round": 2,
+    "ducks_hit": 0,
+    "ducks_total": 3,
+    "method": "lcg",
+    "rng_calls": 21,
+    "date": "2026-04-19T19:52:12.768034"
+  },
+  {
+    "name": "gali",
+    "score": 0,
+    "round": 2,
+    "ducks_hit": 0,
+    "ducks_total": 3,
+    "method": "lcg",
+    "rng_calls": 21,
+    "date": "2026-04-19T19:52:13.327531"
+  },
+  {
+    "name": "orla",
+    "score": 0,
+    "round": 2,
+    "ducks_hit": 0,
+    "ducks_total": 3,
+    "method": "cm",
+    "rng_calls": 21,
+    "date": "2026-04-19T19:52:37.535310"
+  },
+  {
+    "name": "orla",
+    "score": 499,
+    "round": 6,
+    "ducks_hit": 4,
+    "ducks_total": 11,
+    "method": "lcg",
+    "rng_calls": 77,
+    "date": "2026-04-19T19:57:05.666288"
+  },
+  {
+    "name": "ww",
+    "score": 107,
+    "round": 2,
+    "ducks_hit": 1,
+    "ducks_total": 3,
+    "method": "lcg",
+    "rng_calls": 21,
+    "date": "2026-04-19T19:59:54.375132"
+  },
+  {
+    "name": "Hunter",
+    "score": 0,
+    "round": 2,
+    "ducks_hit": 0,
+    "ducks_total": 3,
+    "method": "lcg",
+    "rng_calls": 21,
+    "date": "2026-04-19T20:02:18.388974"
+  },
+  {
+    "name": "324",
+    "score": 384,
+    "round": 5,
+    "ducks_hit": 3,
+    "ducks_total": 9,
+    "method": "cm",
+    "rng_calls": 63,
+    "date": "2026-04-19T20:03:16.720760"
+  },
+  {
+    "name": "324",
+    "score": 384,
+    "round": 5,
+    "ducks_hit": 3,
+    "ducks_total": 9,
+    "method": "cm",
+    "rng_calls": 63,
+    "date": "2026-04-19T20:03:16.893244"
+  },
+  {
+    "name": "554",
+    "score": 1589,
+    "round": 8,
+    "ducks_hit": 12,
+    "ducks_total": 32,
+    "method": "cm",
+    "rng_calls": 224,
+    "date": "2026-04-19T20:06:44.796834"
+  },
+  {
+    "name": "Hunter",
+    "score": 1397,
+    "round": 7,
+    "ducks_hit": 11,
+    "ducks_total": 28,
+    "method": "cm",
+    "rng_calls": 196,
+    "date": "2026-04-19T20:42:11.158100"
+  }
+]
