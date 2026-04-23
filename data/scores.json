@@ -148,5 +148,45 @@
     "method": "cm",
     "rng_calls": 196,
     "date": "2026-04-19T20:42:11.158100"
+  },
+  {
+    "name": "111",
+    "score": 3377,
+    "round": 14,
+    "ducks_hit": 22,
+    "ducks_total": 56,
+    "method": "cm",
+    "rng_calls": 392,
+    "date": "2026-04-19T21:09:36.130782"
+  },
+  {
+    "name": "67",
+    "score": 1465,
+    "round": 10,
+    "ducks_hit": 15,
+    "ducks_total": 40,
+    "method": "lcg",
+    "rng_calls": 280,
+    "date": "2026-04-19T21:48:24.500768"
+  },
+  {
+    "name": "jp",
+    "score": 1128,
+    "round": 6,
+    "ducks_hit": 9,
+    "ducks_total": 24,
+    "method": "cm",
+    "rng_calls": 168,
+    "date": "2026-04-23T00:16:41.327327"
+  },
+  {
+    "name": "1233",
+    "score": 383,
+    "round": 2,
+    "ducks_hit": 3,
+    "ducks_total": 7,
+    "method": "lcg",
+    "rng_calls": 49,
+    "date": "2026-04-23T00:22:23.912964"
   }
 ]

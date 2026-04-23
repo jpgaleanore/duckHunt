@@ -80,6 +80,7 @@
             <div class="hud-item">SCORE<br><span id="hud-score">0</span></div>
             <div class="hud-item">RONDA<br><span id="hud-round">1</span></div>
             <div class="hud-item">PATOS<br><span id="hud-ducks">0/0</span></div>
+            <div class="hud-item">ESCAPADOS<br><span id="hud-escaped">0/4</span></div>
             <div class="hud-item">
                 TIROS<br>
                 <div class="hud-bullets" id="hud-bullets"></div>
@@ -93,23 +94,8 @@
         <div class="crosshair-dot"></div>
     </div>
 
-    <script src="game.js"></script>
-    <script>
-        // Verificar conexión con el microservicio Python
-        checkServer().then(available => {
-            if (available) {
-                console.log('✓ Servidor randompro conectado');
-                document.getElementById('pyodide-status').textContent = '✓ Servidor Python conectado';
-                document.getElementById('pyodide-status').style.color = '#00ff41';
-            } else {
-                console.warn('⚠ Servidor no disponible, usando fallback JS');
-                document.getElementById('pyodide-status').textContent = '⚠ Servidor offline (usando JS)';
-                document.getElementById('pyodide-status').style.color = '#ffe347';
-            }
-            document.getElementById('btn-start').disabled = false;
-            document.getElementById('btn-start').textContent = '▶ INICIAR';
-        });
-    </script>
+    <!-- Carga modular con ES Modules -->
+    <script type="module" src="main.js"></script>
 
 </body>
 
